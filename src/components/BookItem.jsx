@@ -1,43 +1,29 @@
-import { useState } from "react"
+import { useBookItem } from "../hooks/useBookItem"
 
 import Button from "./UI/Button"
 
 import style from "./BookItem.module.css"
 
 export default function BookItem({ book, deleteBook, updateBook }) {
-  const [isShowButtons, setIsShowButtons] = useState(false)
-
-  const [isEditable, setIsEditable] = useState(false)
-
-  const [newBook, setNewBook] = useState({
-    id: book.id,
-    title: book.title,
-    author: book.author,
-    image: book.image,
-  })
-
-  function getBase64(file) {
-    const reader = new FileReader()
-
-    reader.readAsDataURL(file)
-
-    reader.onload = function () {
-      setNewBook((book) => ({ ...book, image: reader.result }))
-    }
-    reader.onerror = function (error) {
-      console.log(error)
-    }
-  }
+  const {
+    newBook,
+    isShowButtons,
+    isEditable,
+    showButtons,
+    hideButtons,
+    handleImage,
+    handleUpdateBook,
+    handleDeleteBook,
+    handleBookAuthor,
+    handleBookTitle,
+    makeItemEditable,
+  } = useBookItem({ book, deleteBook, updateBook })
 
   return (
     <li
       className={style.book_item}
-      onMouseEnter={() => {
-        if (!isEditable) setIsShowButtons(true)
-      }}
-      onMouseLeave={() => {
-        if (!isEditable) setIsShowButtons(false)
-      }}
+      onMouseEnter={showButtons}
+      onMouseLeave={hideButtons}
     >
       <img
         className={style.book_img}
@@ -46,8 +32,8 @@ export default function BookItem({ book, deleteBook, updateBook }) {
       <div className={style.book_info}>
         {isShowButtons && !isEditable && (
           <div className={style.btns}>
-            <Button onClick={() => setIsEditable(true)}>Изменить</Button>
-            <Button color="red" onClick={() => deleteBook(book.id)}>
+            <Button onClick={makeItemEditable}>Изменить</Button>
+            <Button color="red" onClick={handleDeleteBook}>
               Удалить
             </Button>
           </div>
@@ -58,17 +44,11 @@ export default function BookItem({ book, deleteBook, updateBook }) {
               <span className={style.upload}>Обложка</span>
               <input
                 className={style.input_file}
-                onChange={(e) => getBase64(e.target.files[0])}
+                onChange={handleImage}
                 type="file"
               />
             </label>
-            <Button
-              color="green"
-              onClick={() => {
-                setIsEditable(false)
-                updateBook(newBook)
-              }}
-            >
+            <Button color="green" onClick={handleUpdateBook}>
               Сохранить
             </Button>
           </div>
@@ -78,9 +58,7 @@ export default function BookItem({ book, deleteBook, updateBook }) {
             className={style.input}
             rows={3}
             value={newBook.title}
-            onChange={(e) =>
-              setNewBook((newBook) => ({ ...newBook, title: e.target.value }))
-            }
+            onChange={handleBookTitle}
           />
         ) : (
           <h3 className={style.book_title}>{book.title}</h3>
@@ -89,9 +67,7 @@ export default function BookItem({ book, deleteBook, updateBook }) {
           <input
             className={style.input}
             value={newBook.author}
-            onChange={(e) =>
-              setNewBook((newBook) => ({ ...newBook, author: e.target.value }))
-            }
+            onChange={handleBookAuthor}
           />
         ) : (
           <p className={style.book_author}>{book.author}</p>

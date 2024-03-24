@@ -1,36 +1,18 @@
-import { useState } from "react"
+import { useForm } from "../hooks/useForm"
 
 import Button from "./UI/Button"
 
 import style from "./Form.module.css"
 
 export default function Form({ addBook }) {
-  const [book, setBook] = useState({
-    title: "",
-    author: "",
-    image: "",
-  })
-
-  function handleSubmit(e) {
-    e.preventDefault()
-    setBook({
-      title: "",
-      author: "",
-      image: "",
-    })
-  }
-
-  function getBase64(file) {
-    const reader = new FileReader()
-    reader.readAsDataURL(file)
-
-    reader.onload = function () {
-      setBook((book) => ({ ...book, image: reader.result }))
-    }
-    reader.onerror = function (error) {
-      console.log(error)
-    }
-  }
+  const {
+    book,
+    handleSubmit,
+    handleImageFile,
+    handleBookTitle,
+    handleBookAuthor,
+    resetImageInput,
+  } = useForm(addBook)
 
   return (
     <form className={style.form} onSubmit={handleSubmit}>
@@ -40,10 +22,8 @@ export default function Form({ addBook }) {
         </span>
         <input
           className={style.input_file}
-          onClick={(e) => (e.target.value = null)}
-          onChange={(e) => {
-            getBase64(e.target.files[0])
-          }}
+          onClick={resetImageInput}
+          onChange={handleImageFile}
           type="file"
         />
       </label>
@@ -52,9 +32,7 @@ export default function Form({ addBook }) {
         <input
           className={style.input}
           value={book.title}
-          onChange={(e) =>
-            setBook((book) => ({ ...book, title: e.target.value }))
-          }
+          onChange={handleBookTitle}
         />
       </label>
       <label className={style.label}>
@@ -62,14 +40,11 @@ export default function Form({ addBook }) {
         <input
           className={style.input}
           value={book.author}
-          onChange={(e) =>
-            setBook((book) => ({ ...book, author: e.target.value }))
-          }
+          onChange={handleBookAuthor}
         />
       </label>
       <Button
         disabled={!book.title.trim() || !book.author.trim()}
-        onClick={() => addBook(book)}
         color="green"
       >
         Добавить книгу
